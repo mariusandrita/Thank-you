@@ -1,0 +1,1283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thank You, Team 3 · CyberGames & DSC 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;600;700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:          #05080f;
+      --surface:     #0c1018;
+      --surface2:    #121928;
+      --bronze:      #b87333;
+      --gold:        #d4956a;
+      --glow:        rgba(184, 115, 51, 0.28);
+      --glow-strong: rgba(184, 115, 51, 0.5);
+      --text:        #ede0cc;
+      --muted:       #6a7d96;
+      --border:      rgba(184, 115, 51, 0.18);
+      --border-hover:rgba(184, 115, 51, 0.6);
+    }
+
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Cormorant Garamond', 'Georgia', serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* ─── CANVAS STARFIELD ─────────────────────────────────── */
+    #starfield {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* ─── HERO ─────────────────────────────────────────────── */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .event-badge {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.45em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.4s forwards;
+    }
+
+    .medal-wrap {
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 1s ease 0.7s forwards;
+    }
+
+    .medal-glyph {
+      font-size: clamp(3.5rem, 8vw, 5.5rem);
+      display: block;
+      filter: drop-shadow(0 0 24px var(--glow-strong));
+      animation: float 5s ease-in-out 2s infinite;
+    }
+
+    /* Cycling Thank-You display */
+    .ty-stage {
+      position: relative;
+      height: clamp(80px, 14vw, 130px);
+      width: min(900px, 90vw);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: visible;
+      margin-bottom: 0.4rem;
+    }
+
+    .ty-word {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(3.2rem, 10vw, 7.5rem);
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      background: linear-gradient(135deg, #7a4520 0%, var(--bronze) 35%, var(--gold) 60%, #c97a40 100%);
+      background-size: 250% auto;
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 28px rgba(184, 115, 51, 0.45));
+      opacity: 0;
+      transform: translateY(18px) scale(0.94);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .ty-word.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+
+    .ty-word.exit {
+      opacity: 0;
+      transform: translateY(-18px) scale(1.04);
+    }
+
+    .ty-lang {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--muted);
+      min-height: 1.4em;
+      margin-bottom: 2rem;
+      transition: opacity 0.3s;
+    }
+
+    .hero-subtitle {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(0.85rem, 2.5vw, 1.1rem);
+      font-weight: 300;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--muted);
+      opacity: 0;
+      animation: fadeUp 1s ease 1.2s forwards;
+    }
+
+    .scroll-cue {
+      position: absolute;
+      bottom: 2.5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.6rem;
+      opacity: 0;
+      animation: fadeIn 1s ease 4.5s forwards;
+      cursor: pointer;
+    }
+
+    .scroll-cue span {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .scroll-chevron {
+      width: 18px;
+      height: 18px;
+      border-right: 1px solid var(--bronze);
+      border-bottom: 1px solid var(--bronze);
+      transform: rotate(45deg);
+      opacity: 0.7;
+      animation: chevronBounce 1.6s ease-in-out infinite;
+    }
+
+    /* ─── MAIN CONTENT ─────────────────────────────────────── */
+    .content {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 7rem 2rem 5rem;
+    }
+
+    /* Ornamental divider */
+    .ornament {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      max-width: 360px;
+      margin: 1.4rem auto;
+    }
+    .orn-line { flex: 1; height: 1px; background: var(--border); }
+    .orn-gem {
+      width: 7px; height: 7px;
+      background: var(--bronze);
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+    .orn-gem-sm {
+      width: 4px; height: 4px;
+      background: var(--bronze);
+      opacity: 0.5;
+      transform: rotate(45deg);
+      flex-shrink: 0;
+    }
+
+    .section-eyebrow {
+      text-align: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 0.8rem;
+    }
+
+    .section-title {
+      text-align: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.6rem;
+    }
+
+    .section-note {
+      text-align: center;
+      font-size: 1.1rem;
+      font-style: italic;
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 3.5rem;
+      line-height: 1.6;
+    }
+
+    /* ─── FLAG GRID ────────────────────────────────────────── */
+    .flag-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1.25rem;
+    }
+
+    @media (max-width: 860px) { .flag-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 480px) { .flag-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    .flag-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.6rem 1rem 1.3rem;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(24px);
+      transition:
+        border-color 0.3s,
+        box-shadow 0.3s,
+        transform 0.3s;
+      animation: cardIn 0.6s ease forwards;
+    }
+
+    .flag-card:nth-child(1)  { animation-delay: 0.05s; }
+    .flag-card:nth-child(2)  { animation-delay: 0.10s; }
+    .flag-card:nth-child(3)  { animation-delay: 0.15s; }
+    .flag-card:nth-child(4)  { animation-delay: 0.20s; }
+    .flag-card:nth-child(5)  { animation-delay: 0.25s; }
+    .flag-card:nth-child(6)  { animation-delay: 0.30s; }
+    .flag-card:nth-child(7)  { animation-delay: 0.35s; }
+    .flag-card:nth-child(8)  { animation-delay: 0.40s; }
+    .flag-card:nth-child(9)  { animation-delay: 0.45s; }
+    .flag-card:nth-child(10) { animation-delay: 0.50s; }
+
+    /* Top shimmer bar */
+    .flag-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--bronze), transparent);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    /* Radial glow on hover */
+    .flag-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 40%, var(--glow) 0%, transparent 68%);
+      opacity: 0;
+      transition: opacity 0.35s;
+      pointer-events: none;
+    }
+
+    .flag-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(184, 115, 51, 0.18), 0 0 0 1px rgba(184, 115, 51, 0.08);
+    }
+
+    .flag-card:hover::before,
+    .flag-card:hover::after { opacity: 1; }
+
+    .flag-emoji {
+      display: block;
+      font-size: 2.8rem;
+      line-height: 1;
+      margin-bottom: 0.8rem;
+      transition: transform 0.3s ease;
+      filter: drop-shadow(0 2px 8px rgba(0,0,0,0.6));
+    }
+
+    .flag-card:hover .flag-emoji { transform: scale(1.12); }
+
+    .flag-first-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      color: var(--text);
+      margin-bottom: 0.2rem;
+    }
+
+    .flag-country-name {
+      font-size: 0.78rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    /* ─── FOOTER ───────────────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 2.5rem 2rem;
+      text-align: center;
+    }
+
+    .footer-text {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.35em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ─── MODAL ────────────────────────────────────────────── */
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 8, 15, 0.88);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .overlay.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--bronze);
+      border-radius: 18px;
+      max-width: 560px;
+      width: 100%;
+      max-height: 88vh;
+      overflow-y: auto;
+      padding: 2.2rem 2.4rem;
+      position: relative;
+      box-shadow:
+        0 0 0 1px rgba(184,115,51,0.08),
+        0 0 60px rgba(184,115,51,0.15),
+        0 0 120px rgba(184,115,51,0.05),
+        0 30px 60px rgba(0,0,0,0.6);
+      transform: translateY(28px) scale(0.97);
+      transition: transform 0.4s cubic-bezier(0.16,1,0.3,1);
+    }
+
+    .overlay.open .modal {
+      transform: translateY(0) scale(1);
+    }
+
+    /* scrollbar inside modal */
+    .modal::-webkit-scrollbar { width: 4px; }
+    .modal::-webkit-scrollbar-track { background: transparent; }
+    .modal::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .modal-close {
+      position: absolute;
+      top: 1.1rem;
+      right: 1.1rem;
+      width: 30px; height: 30px;
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      color: var(--muted);
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: border-color 0.2s, color 0.2s;
+      font-family: monospace;
+    }
+
+    .modal-close:hover {
+      border-color: var(--bronze);
+      color: var(--bronze);
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      padding-bottom: 1.4rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 1.8rem;
+    }
+
+    .modal-flag-lg {
+      font-size: 3.2rem;
+      flex-shrink: 0;
+      filter: drop-shadow(0 0 12px var(--glow));
+    }
+
+    .modal-meta h2 {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.2rem;
+    }
+
+    .modal-meta .modal-country {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--bronze);
+    }
+
+    .modal-body {
+      font-size: 1.05rem;
+      line-height: 1.9;
+      color: var(--text);
+      white-space: pre-line;
+    }
+
+    /* RTL for Arabic */
+    .modal-body[dir="rtl"] {
+      text-align: right;
+      font-size: 1.12rem;
+      line-height: 2.1;
+      font-family: 'Geeza Pro', 'Arabic Typesetting', 'Arial Unicode MS', 'Cormorant Garamond', serif;
+    }
+
+    .modal-signature {
+      display: block;
+      max-width: 140px;
+      width: 45%;
+      margin: 1.2rem 0 0;
+      opacity: 0.85;
+      filter: drop-shadow(0 0 10px rgba(184,115,51,0.3));
+    }
+
+    .modal-body[dir="rtl"] + .modal-signature {
+      margin-left: auto;
+    }
+
+    .modal-socials {
+      margin-top: 1.8rem;
+      padding-top: 1.4rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .social-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 7px;
+      color: var(--bronze);
+      text-decoration: none;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      transition: background 0.2s, border-color 0.2s, transform 0.2s;
+    }
+
+    .social-btn:hover {
+      background: rgba(184, 115, 51, 0.1);
+      border-color: var(--bronze);
+      transform: translateY(-1px);
+    }
+
+    .social-btn svg { flex-shrink: 0; }
+
+    /* ─── KEYFRAMES ────────────────────────────────────────── */
+    @keyframes fadeIn  { from { opacity:0 } to { opacity:1 } }
+    @keyframes fadeUp  {
+      from { opacity:0; transform: translateY(22px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    @keyframes cardIn  {
+      from { opacity:0; transform: translateY(24px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50%       { transform: translateY(-12px); }
+    }
+    @keyframes chevronBounce {
+      0%, 100% { transform: rotate(45deg) translate(0,0); }
+      50%       { transform: rotate(45deg) translate(3px, 3px); }
+    }
+    @keyframes shimmer {
+      0%   { background-position: 0% center; }
+      100% { background-position: 250% center; }
+    }
+
+    /* ─── MEMORIES / POLAROID REEL ────────────────────────── */
+    .memories-section {
+      position: relative;
+      z-index: 1;
+      padding: 5rem 0 6rem;
+      overflow: hidden;
+    }
+
+    .memories-label {
+      text-align: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 0.7rem;
+    }
+
+    .memories-title {
+      text-align: center;
+      font-family: 'Rajdhani', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 0.6rem;
+    }
+
+    .memories-subtitle {
+      text-align: center;
+      font-size: 1rem;
+      font-style: italic;
+      color: var(--muted);
+      margin-bottom: 3rem;
+    }
+
+    .reel-track-outer {
+      position: relative;
+      overflow: hidden;
+      cursor: grab;
+      -webkit-user-select: none;
+      user-select: none;
+      padding: 2rem 0 3rem;
+    }
+
+    .reel-track-outer:active { cursor: grabbing; }
+
+    /* Fade edges */
+    .reel-track-outer::before,
+    .reel-track-outer::after {
+      content: '';
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 120px;
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .reel-track-outer::before {
+      left: 0;
+      background: linear-gradient(to right, var(--bg), transparent);
+    }
+
+    .reel-track-outer::after {
+      right: 0;
+      background: linear-gradient(to left, var(--bg), transparent);
+    }
+
+    .reel-track {
+      display: flex;
+      gap: 2.2rem;
+      padding: 0 3rem;
+      /* width set by JS */
+      will-change: transform;
+    }
+
+    .polaroid {
+      flex-shrink: 0;
+      background: #f5f0e8;
+      padding: 0.85rem 0.85rem 2.2rem;
+      box-shadow:
+        0 6px 20px rgba(0,0,0,0.55),
+        0 2px 6px rgba(0,0,0,0.4),
+        inset 0 0 0 1px rgba(0,0,0,0.06);
+      transition: transform 0.35s ease, box-shadow 0.35s ease;
+      position: relative;
+      /* rotation set inline via JS */
+    }
+
+    .polaroid:hover {
+      box-shadow:
+        0 16px 40px rgba(0,0,0,0.65),
+        0 4px 12px rgba(184,115,51,0.35),
+        inset 0 0 0 1px rgba(0,0,0,0.06);
+      z-index: 10;
+      transform: rotate(0deg) scale(1.05) !important;
+    }
+
+    .polaroid img {
+      display: block;
+      width: 240px;
+      height: 240px;
+      object-fit: cover;
+      object-position: center;
+      pointer-events: none;
+    }
+
+    @media (max-width: 600px) {
+      .polaroid img { width: 180px; height: 180px; }
+    }
+
+    /* ─── SIGNATURE SIGN-OFF ───────────────────────────────── */
+    .signoff {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 4rem 2rem 5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .signoff-from {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.5em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 1.8rem;
+    }
+
+    .signoff-sig {
+      display: block;
+      max-width: 260px;
+      width: 55%;
+      margin: 0 auto 1.2rem;
+      opacity: 0.9;
+      filter: drop-shadow(0 0 16px rgba(184,115,51,0.4));
+      transition: opacity 0.3s, filter 0.3s;
+    }
+
+    .signoff-sig:hover {
+      opacity: 1;
+      filter: drop-shadow(0 0 24px rgba(184,115,51,0.7));
+    }
+
+    .signoff-name {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bronze);
+      margin-bottom: 0.2rem;
+    }
+
+    .signoff-role {
+      font-size: 0.9rem;
+      font-style: italic;
+      color: var(--muted);
+    }
+
+    /* ─── HORIZONTAL GLOW LINE (top of page) ──────────────── */
+    .top-glow {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--bronze) 50%, transparent 100%);
+      opacity: 0.35;
+      z-index: 2;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<div class="top-glow"></div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════════════════════ -->
+<section class="hero">
+
+  <p class="event-badge">CyberGames &amp; DSC &nbsp;·&nbsp; Marrakech, Morocco &nbsp;·&nbsp; 2026</p>
+
+  <div class="medal-wrap">
+    <span class="medal-glyph">🥉</span>
+  </div>
+
+  <!-- Cycling "Thank You" -->
+  <div class="ty-stage" id="tyStage"></div>
+  <div class="ty-lang"  id="tyLang"></div>
+
+  <p class="hero-subtitle">Team 3 &nbsp;·&nbsp; From Every Corner of the World</p>
+
+  <div class="scroll-cue" onclick="document.querySelector('.content').scrollIntoView({behavior:'smooth'})">
+    <span>Scroll to your flag</span>
+    <div class="scroll-chevron"></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN
+═══════════════════════════════════════════════════════════ -->
+<main class="content">
+
+  <p class="section-eyebrow">A Message from Your Team Leader</p>
+  <h1 class="section-title">Thank You for Being Extraordinary</h1>
+  <div class="ornament">
+    <div class="orn-line"></div>
+    <div class="orn-gem-sm"></div>
+    <div class="orn-gem"></div>
+    <div class="orn-gem-sm"></div>
+    <div class="orn-line"></div>
+  </div>
+  <p class="section-note">Click your country's flag to read your personal message in your native language</p>
+
+  <div class="flag-grid" id="flagGrid"></div>
+
+</main>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MEMORIES
+═══════════════════════════════════════════════════════════ -->
+<section class="memories-section">
+  <p class="memories-label">Team 3 in Pictures</p>
+  <h2 class="memories-title">Moments from Marrakech</h2>
+  <p class="memories-subtitle">Drag to explore &nbsp;·&nbsp; May 2026</p>
+
+  <div class="reel-track-outer" id="reelOuter">
+    <div class="reel-track" id="reelTrack">
+      <!-- Polaroids injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SIGN-OFF
+═══════════════════════════════════════════════════════════ -->
+<section class="signoff">
+  <p class="signoff-from">With gratitude &nbsp;·&nbsp; Team 3 Leader</p>
+  <img class="signoff-sig" src="images/signature.png" alt="Marius Andrita signature">
+  <p class="signoff-name">Marius Andrita</p>
+  <p class="signoff-role">Team 3 Leader &nbsp;·&nbsp; Romania 🇷🇴 &nbsp;·&nbsp; CyberGames &amp; DSC 2026</p>
+</section>
+
+<footer>
+  <p class="footer-text">Team 3 &nbsp;·&nbsp; CyberGames &amp; DSC 2026 &nbsp;·&nbsp; Marrakech, Morocco</p>
+</footer>
+
+<!-- ═══════════════════════════════════════════════════════════
+     MODAL
+═══════════════════════════════════════════════════════════ -->
+<div class="overlay" id="overlay">
+  <div class="modal" id="modal">
+    <button type="button" class="modal-close" id="closeBtn" aria-label="Close">✕</button>
+    <div class="modal-head">
+      <div class="modal-flag-lg" id="mFlag"></div>
+      <div class="modal-meta">
+        <h2 id="mName"></h2>
+        <div class="modal-country" id="mCountry"></div>
+      </div>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+    <img class="modal-signature" src="images/signature.png" alt="Marius Andrita">
+    <div class="modal-socials">
+      <a href="https://www.linkedin.com/in/mariusandrita" target="_blank" rel="noopener" class="social-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+        </svg>
+        LinkedIn
+      </a>
+      <a href="https://www.instagram.com/mariusandrita/" target="_blank" rel="noopener" class="social-btn">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+        </svg>
+        Instagram
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════
+     SCRIPT
+═══════════════════════════════════════════════════════════ -->
+<script>
+/* ── TEAM DATA ──────────────────────────────────────────────── */
+const TEAM = [
+  {
+    name: "Stanoje Bubanja",
+    country: "Montenegro",
+    flag: "🇲🇪",
+    lang: "Crnogorski",
+    dir: "ltr",
+    msg: `Dragi Stanoje,
+
+Nadam se da si imao dobro putovanje kući — a ako si još uvijek na putu, sretan put!
+
+Hvala ti što si bio dio nevjerovatnog Tima 3. Tvoj trud i posvećenost su bili zaista primjetni i vrijjedni divljenja. Osvajanje medalje na CyberGames 2026 u Marakešu je nešto čime se svaki od nas može ponositi.
+
+Vidimo se sljedeći put — do tada, slobodno me kontaktiraj!
+
+— Marius, vođa Tima 3`
+  },
+  {
+    name: "Armin Kolasinac",
+    country: "Bosnia & Herzegovina",
+    flag: "🇧🇦",
+    lang: "Bosanski",
+    dir: "ltr",
+    msg: `Dragi Armine,
+
+Nadam se da si imao dobro putovanje kući — a ako si još uvijek na putu, sretan put!
+
+Hvala ti što si bio dio nevjerovatnog Tima 3. Tvoj trud i posvećenost bili su zaista impresivni. Osvajanje medalje na CyberGames 2026 u Marakešu je nešto na šta se svako od nas može ponositi.
+
+Vidimo se sljedeći put — do tada, slobodno me kontaktiraj!
+
+— Marius, vođa Tima 3`
+  },
+  {
+    name: "Akifumi OMAE",
+    country: "Japan",
+    flag: "🇯🇵",
+    lang: "日本語",
+    dir: "ltr",
+    msg: `秋文さんへ、
+
+無事に帰国されたことを願っています。まだ旅の途中の方は、どうか安全な旅を！
+
+チーム3の一員として共に戦ってくれて、本当にありがとうございました。あなたの努力と献身は、私たち全員にとって大きな力になりました。マラケシュでのCyberGames 2026でのメダル獲得は、私たち全員の誇りです。
+
+またいつかお会いできることを楽しみにしています。いつでも気軽にご連絡ください！
+
+— チーム3リーダー　Marius`
+  },
+  {
+    name: "Abdelilah Chihabi",
+    country: "Morocco",
+    flag: "🇲🇦",
+    lang: "العربية",
+    dir: "rtl",
+    msg: `عزيزي عبد الإله،
+
+أتمنى أن تكون قد حظيت برحلة عودة موفقة إلى المنزل، ولمن لا يزال في الطريق — رحلة سالمة!
+
+شكراً جزيلاً لك على كونك جزءاً من الفريق 3 الرائع. كان جهدك وتفانيك ملحوظاً ومقدّراً حقاً. الفوز بالميدالية في CyberGames 2026 بمراكش هو شرف نفخر به جميعاً.
+
+إلى اللقاء في المرة القادمة — حتى ذلك الحين، لا تتردد في التواصل معي!
+
+— Marius، قائد الفريق 3`
+  },
+  {
+    name: "Ahmed AL-Shalbout",
+    country: "Libya",
+    flag: "🇱🇾",
+    lang: "العربية",
+    dir: "rtl",
+    msg: `عزيزي أحمد،
+
+أتمنى أن تكون قد حظيت برحلة عودة موفقة إلى المنزل، ولمن لا يزال في الطريق — رحلة سالمة!
+
+شكراً جزيلاً لك على كونك جزءاً من الفريق 3 الرائع. كان جهدك وتفانيك ملحوظاً ومقدّراً حقاً. الفوز بالميدالية في CyberGames 2026 بمراكش هو شرف نفخر به جميعاً.
+
+إلى اللقاء في المرة القادمة — حتى ذلك الحين، لا تتردد في التواصل معي!
+
+— Marius، قائد الفريق 3`
+  },
+  {
+    name: "Mahdi Malkawi",
+    country: "Jordan",
+    flag: "🇯🇴",
+    lang: "العربية",
+    dir: "rtl",
+    msg: `عزيزي مهدي،
+
+أتمنى أن تكون قد حظيت برحلة عودة موفقة إلى المنزل، ولمن لا يزال في الطريق — رحلة سالمة!
+
+شكراً جزيلاً لك على كونك جزءاً من الفريق 3 الرائع. كان جهدك وتفانيك ملحوظاً ومقدّراً حقاً. الفوز بالميدالية في CyberGames 2026 بمراكش هو شرف نفخر به جميعاً.
+
+إلى اللقاء في المرة القادمة — حتى ذلك الحين، لا تتردد في التواصل معي!
+
+— Marius، قائد الفريق 3`
+  },
+  {
+    name: "Marius Andrita",
+    country: "Romania",
+    flag: "🇷🇴",
+    lang: "Română",
+    dir: "ltr",
+    msg: `Dragi colegi din Echipa 3,
+
+Sper că ați ajuns acasă cu bine — iar celor care mai sunt pe drum, călătorie sigură!
+
+A fi liderul Echipei 3 a fost o onoare și o bucurie. Fiecare dintre voi a adus ceva unic și valoros acestei experiențe. Vă mulțumesc pentru efort, pentru dedicare și pentru că ați transformat CyberGames 2026 în o amintire de neuitat. Medalia de la Marrakech este a voastră — o meritați din plin!
+
+Pe curând — până atunci, nu ezitați să mă contactați!
+
+— Marius Andrita, liderul Echipei 3`
+  },
+  {
+    name: "Murat Demir",
+    country: "Türkiye",
+    flag: "🇹🇷",
+    lang: "Türkçe",
+    dir: "ltr",
+    msg: `Sevgili Murat,
+
+Umarım güvenle eve döndün — hâlâ yolculukta olanlar için de güvenli yolculuklar!
+
+Harika Takım 3'ün bir parçası olduğun için çok teşekkür ederim. Gösterdiğin çaba ve özveri gerçekten takdire değerdi. Marakeş'teki CyberGames 2026'da madalya kazanmak, hepimiz için gurur verici bir başarı.
+
+Bir dahaki sefere görüşürüz — o zamana kadar, sosyal medyadan çekinmeden ulaş!
+
+— Marius, Takım 3 Lideri`
+  },
+  {
+    name: "Domingo Kabunare",
+    country: "Kiribati",
+    flag: "🇰🇮",
+    lang: "Te Taetae ni Kiribati",
+    dir: "ltr",
+    msg: `Domingo ae itiaki,
+
+I moani uringa bwa ko roko n raoi n am kaawa. Ao ake a tabe ni bwaintabo — tibwa raoi n ami roko!
+
+Ko rabwa n rabwaia n Team 3 ae raoiroi aei. Katannakimi ao am iangoia a bon tamaroa ma ti kakamaiu iai. Taonakin te meara n CyberGames 2026 i Marrakesh bon te bai ae ti bane ni kakamaiu iai.
+
+Ti nori iai n neboina — n ikanne, ko kona n taetae nako ira!
+
+(With deepest gratitude — thank you for being part of our team.)
+
+— Marius, Team 3 Leader`
+  },
+  {
+    name: "Agron Gërguri",
+    country: "Kosovo",
+    flag: "🇽🇰",
+    lang: "Shqip",
+    dir: "ltr",
+    msg: `I dashur Agron,
+
+Shpresoj të kesh pasur udhëtim të mirë në shtëpi — dhe për ata që janë ende duke udhëtuar, udhëtim të sigurt!
+
+Faleminderit shumë që ke qenë pjesë e Ekipit 3 të mrekullueshëm. Përpjekja dhe dedikimi yt ishin vërtet të dukshme dhe të çmuara. Fitimi i medaljes në CyberGames 2026 në Marrakesh është diçka për të cilën të gjithë jemi krenarë.
+
+Shihemi herën tjetër — deri atëherë, mos hezito të më kontaktosh!
+
+— Marius, udhëheqësi i Ekipit 3`
+  }
+];
+
+/* ── CYCLING THANK-YOU ANIMATION ────────────────────────────── */
+const TY_WORDS = [
+  { text: "شكراً",        lang: "Arabic" },
+  { text: "ありがとう",    lang: "Japanese" },
+  { text: "Faleminderit", lang: "Albanian" },
+  { text: "Ko rabwa",     lang: "Gilbertese" },
+  { text: "Hvala",        lang: "Bosnian / Montenegrin" },
+  { text: "Mulțumesc",    lang: "Romanian" },
+  { text: "Teşekkürler",  lang: "Turkish" },
+  { text: "Thank You",    lang: "English" },
+];
+
+const stage   = document.getElementById('tyStage');
+const langEl  = document.getElementById('tyLang');
+
+TY_WORDS.forEach(w => {
+  const el = document.createElement('div');
+  el.className = 'ty-word';
+  el.textContent = w.text;
+  if (w.lang === 'Arabic') el.style.direction = 'rtl';
+  stage.appendChild(el);
+});
+
+const wordEls = stage.querySelectorAll('.ty-word');
+let current = null;
+let idx = 0;
+
+function nextWord() {
+  if (current) {
+    current.classList.remove('active');
+    current.classList.add('exit');
+    const prev = current;
+    setTimeout(() => prev.classList.remove('exit'), 600);
+  }
+  current = wordEls[idx % wordEls.length];
+  current.classList.add('active');
+  langEl.textContent = TY_WORDS[idx % TY_WORDS.length].lang;
+  idx++;
+}
+
+setTimeout(() => {
+  nextWord();
+  setInterval(nextWord, 1700);
+}, 800);
+
+/* ── BUILD FLAG GRID ────────────────────────────────────────── */
+const grid = document.getElementById('flagGrid');
+TEAM.forEach(m => {
+  const card = document.createElement('div');
+  card.className = 'flag-card';
+  card.innerHTML = `
+    <span class="flag-emoji">${m.flag}</span>
+    <div class="flag-first-name">${m.name.split(' ')[0]}</div>
+    <div class="flag-country-name">${m.country}</div>
+  `;
+  card.addEventListener('click', () => openModal(m));
+  grid.appendChild(card);
+});
+
+/* ── MODAL ──────────────────────────────────────────────────── */
+const overlay  = document.getElementById('overlay');
+const modal    = document.getElementById('modal');
+const closeBtn = document.getElementById('closeBtn');
+
+function openModal(m) {
+  document.getElementById('mFlag').textContent    = m.flag;
+  document.getElementById('mName').textContent    = m.name;
+  document.getElementById('mCountry').textContent = `${m.country}  ·  ${m.lang}`;
+  const body = document.getElementById('mBody');
+  body.textContent = m.msg;
+  body.setAttribute('dir', m.dir || 'ltr');
+  overlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  overlay.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+overlay.addEventListener('click', e => { if (e.target === overlay) closeModal(); });
+closeBtn.addEventListener('click', closeModal);
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ── POLAROID REEL ──────────────────────────────────────────── */
+const PHOTOS = [
+  "WhatsApp Image 2026-05-21 at 18.26.41 (1).jpeg",
+  "WhatsApp Image 2026-05-21 at 18.27.51 (2).jpeg",
+  "WhatsApp Image 2026-05-21 at 18.27.52 (2).jpeg",
+  "WhatsApp Image 2026-05-21 at 18.30.29.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.30.30.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.31.41.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.35.43.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.35.44.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.41.55.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.57.43 (1).jpeg",
+  "WhatsApp Image 2026-05-21 at 18.57.43.jpeg",
+  "WhatsApp Image 2026-05-21 at 18.57.44.jpeg",
+];
+
+const ROTATIONS = [-3.2, 1.8, -1.4, 2.6, -2.1, 3.0, -2.8, 1.2, -1.9, 2.4, -3.5, 1.6];
+
+const reelTrack = document.getElementById('reelTrack');
+const reelOuter = document.getElementById('reelOuter');
+
+// Build polaroids (doubled for seamless loop)
+[...PHOTOS, ...PHOTOS].forEach((filename, i) => {
+  const div = document.createElement('div');
+  div.className = 'polaroid';
+  const rot = ROTATIONS[i % ROTATIONS.length];
+  div.style.transform = `rotate(${rot}deg)`;
+  div.dataset.baseRot = rot;
+
+  const img = document.createElement('img');
+  img.src = `images/${encodeURIComponent(filename)}`;
+  img.alt = `Team 3 Marrakech 2026`;
+  img.loading = 'lazy';
+
+  div.appendChild(img);
+  reelTrack.appendChild(div);
+});
+
+// Auto-scroll state
+let autoScrollX = 0;
+let autoScrollPaused = false;
+let isDragging = false;
+let dragStartX = 0;
+let dragScrollStart = 0;
+let velocity = 0;
+let lastDragX = 0;
+let lastDragTime = 0;
+let animating = false;
+
+const SPEED = 0.55; // px per frame
+
+function getHalfWidth() {
+  const cards = reelTrack.querySelectorAll('.polaroid');
+  const half = Math.floor(cards.length / 2);
+  let w = 0;
+  for (let i = 0; i < half; i++) {
+    const c = cards[i];
+    w += c.offsetWidth + 35; // gap ~35px
+  }
+  return w;
+}
+
+let halfW = 0;
+
+function initReel() {
+  halfW = getHalfWidth();
+  reelTrack.style.transform = `translateX(0px)`;
+  autoScrollX = 0;
+}
+
+function reelTick() {
+  if (!isDragging) {
+    if (!autoScrollPaused) {
+      autoScrollX += SPEED;
+      if (autoScrollX >= halfW) autoScrollX -= halfW;
+    } else if (Math.abs(velocity) > 0.1) {
+      autoScrollX += velocity;
+      velocity *= 0.94;
+      if (autoScrollX >= halfW) autoScrollX -= halfW;
+      if (autoScrollX < 0) autoScrollX += halfW;
+    }
+    reelTrack.style.transform = `translateX(${-autoScrollX}px)`;
+  }
+  requestAnimationFrame(reelTick);
+}
+
+// Pause on hover
+reelOuter.addEventListener('mouseenter', () => { autoScrollPaused = true; });
+reelOuter.addEventListener('mouseleave', () => { autoScrollPaused = false; velocity = 0; });
+
+// Drag to scroll
+reelOuter.addEventListener('mousedown', e => {
+  isDragging = true;
+  dragStartX = e.clientX;
+  dragScrollStart = autoScrollX;
+  lastDragX = e.clientX;
+  lastDragTime = Date.now();
+  velocity = 0;
+  reelOuter.style.cursor = 'grabbing';
+});
+
+window.addEventListener('mousemove', e => {
+  if (!isDragging) return;
+  const dx = dragStartX - e.clientX;
+  autoScrollX = (dragScrollStart + dx + halfW) % halfW;
+  reelTrack.style.transform = `translateX(${-autoScrollX}px)`;
+
+  const now = Date.now();
+  const dt = now - lastDragTime;
+  if (dt > 0) velocity = (lastDragX - e.clientX) / dt * 16;
+  lastDragX = e.clientX;
+  lastDragTime = now;
+});
+
+window.addEventListener('mouseup', () => {
+  if (!isDragging) return;
+  isDragging = false;
+  autoScrollPaused = false;
+  reelOuter.style.cursor = 'grab';
+});
+
+// Touch support
+reelOuter.addEventListener('touchstart', e => {
+  dragStartX = e.touches[0].clientX;
+  dragScrollStart = autoScrollX;
+  lastDragX = e.touches[0].clientX;
+  lastDragTime = Date.now();
+  velocity = 0;
+  autoScrollPaused = true;
+}, { passive: true });
+
+reelOuter.addEventListener('touchmove', e => {
+  const dx = dragStartX - e.touches[0].clientX;
+  autoScrollX = (dragScrollStart + dx + halfW) % halfW;
+  reelTrack.style.transform = `translateX(${-autoScrollX}px)`;
+
+  const now = Date.now();
+  const dt = now - lastDragTime;
+  if (dt > 0) velocity = (lastDragX - e.touches[0].clientX) / dt * 16;
+  lastDragX = e.touches[0].clientX;
+  lastDragTime = now;
+}, { passive: true });
+
+reelOuter.addEventListener('touchend', () => {
+  autoScrollPaused = false;
+});
+
+// Init after layout
+window.addEventListener('load', () => {
+  initReel();
+  requestAnimationFrame(reelTick);
+});
+
+/* ── STARFIELD CANVAS ───────────────────────────────────────── */
+const canvas = document.getElementById('starfield');
+const ctx    = canvas.getContext('2d');
+let stars    = [];
+let raf;
+
+function resize() {
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+
+function initStars() {
+  stars = [];
+  const n = Math.floor((canvas.width * canvas.height) / 3800);
+  for (let i = 0; i < n; i++) {
+    stars.push({
+      x:      Math.random() * canvas.width,
+      y:      Math.random() * canvas.height,
+      r:      Math.random() * 1.1 + 0.15,
+      a:      Math.random(),
+      phase:  Math.random() * Math.PI * 2,
+      speed:  Math.random() * 0.6 + 0.15,
+    });
+  }
+}
+
+function tick(t) {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  stars.forEach(s => {
+    s.phase += s.speed * 0.016;
+    const alpha = 0.25 + 0.55 * Math.sin(s.phase);
+    ctx.beginPath();
+    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(232, 210, 165, ${alpha * s.a})`;
+    ctx.fill();
+  });
+  raf = requestAnimationFrame(tick);
+}
+
+resize();
+initStars();
+requestAnimationFrame(tick);
+window.addEventListener('resize', () => { resize(); initStars(); });
+</script>
+</body>
+</html>
